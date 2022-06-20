@@ -1,6 +1,5 @@
 from collections import UserDict
 
-
 class Field:
     def __init__(self, value):
         self.value = value
@@ -15,25 +14,28 @@ class Phone(Field):
     def __init__(self, phone):
         self.value = phone
 
-
 # Record реализует методы для добавления/удаления/редактирования объектов Phone.
 class Record:
-    def __init__(self, name: Name, phone: Phone = None):
+    def __init__(self, name: Name, phone: list = None):
         self.name = name
         self.phone = phone
 
     def add_phone(self, phone: Phone):
-        self.phone.value.append(phone)
+        self.phone.append(phone)
 
     def del_phone(self, phone: Phone):
-        self.phone.value.remove(phone)
+        for p in self.phone:
+            if phone.value == p.value:
+                self.phone.remove(p)
 
     def change_phone(self, old_phone: Phone, new_phone: Phone):
         self.del_phone(old_phone)
         self.add_phone(new_phone)
 
+
+
     def __repr__(self):
-        return f"{self.name.value}: {self.phone.value}"
+        return f"{self.name.value}: {[i.value for i in self.phone]}"
 
 
 class AddressBook(UserDict):
@@ -41,7 +43,7 @@ class AddressBook(UserDict):
         self.data[record.name.value] = record
 
     def show_phone_numbers(self, name: Name):
-        return self.data[name].phone.value
+        return [i.value for i in self.data[name].phone]
 
 
 phone_book = AddressBook()
@@ -64,8 +66,10 @@ def input_error(func):
 @input_error
 def add_user(*args):
     name = Name(args[0])
-    phone = Phone([p for p in args[1:]])
-    rec = Record(name, phone)
+    phone_list = []
+    for i in args[1:]:
+        phone_list.append(Phone(i))
+    rec = Record(name, phone_list)
     if rec.name.value not in phone_book:
         phone_book.add_record(rec)
     else:
@@ -75,21 +79,18 @@ def add_user(*args):
 
 @input_error
 def add_number(*args):
-    phone_book[args[0]].add_phone(args[1])
+    phone_book[args[0]].add_phone(Phone(args[1]))
     return f"Phone number {args[1]} is successfully added for user {args[0]}"
-
 
 @input_error
 def del_number(*args):
-    phone_book[args[0]].del_phone(args[1])
+    phone_book[args[0]].del_phone(Phone(args[1]))
     return f"Phone number {args[1]} is successfully deleted"
-
 
 @input_error
 def change_number(*args):
-    phone_book[args[0]].change_phone(args[1], args[2])
+    phone_book[args[0]].change_phone(Phone(args[1]), Phone(args[2]))
     return f"Phone number for {args[0]} is successfully changed from {args[1]} to {args[2]}"
-
 
 @input_error
 def phone(*args):
